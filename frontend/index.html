@@ -6,6 +6,7 @@
     <meta name="description" content="ASTRA CARE - Astronaut Health and Space Radiation Monitoring System. Comprehensive telemetry, aerospace radiation analysis, physiological vitals, and mission safety alerts.">
     <title>ASTRA CARE – Astronaut Health & Space Radiation Monitoring System</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="dist/astronaut-twin.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
 </head>
 <body>
@@ -40,8 +41,9 @@
                             <rect x="3" y="14" width="7" height="7"></rect>
                         </svg>
                     </span>
-                    <span>Dashboard</span>
+                    <span>Dashboard & 3D Twin</span>
                 </div>
+                <span class="badge-tag info" style="font-size: 0.62rem; padding: 0.1rem 0.35rem;">3D</span>
             </a>
 
             <a class="nav-item" data-view="radiation">
@@ -303,6 +305,11 @@
                         UTC CLOCK: <span id="dashboard-utc-clock">--:--:-- UTC</span>
                     </div>
                 </div>
+
+                <!-- ============================================================
+                     CENTRAL ATTRACTION: INTERACTIVE 3D ASTRONAUT DIGITAL TWIN
+                     ============================================================ -->
+                <div id="astronaut-3d-root" style="margin-bottom: 2rem;"></div>
 
                 <!-- Quick KPI Stats Row -->
                 <div class="grid-cols-4">
@@ -2276,6 +2283,9 @@
 
     <!-- 9. Master SPA Router & Live Polling Controller -->
     <script src="js/dashboard.js"></script>
+
+    <!-- 10. Interactive 3D Astronaut Digital Twin (React, Three.js, R3F, Drei) -->
+    <script type="module" src="dist/astronaut-twin.js"></script>
 
 </body>
 </html>

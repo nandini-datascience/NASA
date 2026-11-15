@@ -131,6 +131,16 @@ def fetch_latest_nasa_radlab_data(
                 source_status = "local_archive_fallback"
                 source_label = "Local NASA RadLab Sample Archive (Verified Authentic Offline Data)"
                 for r in raw_records:
+                    lat = r.get("latitude")
+                    lon = r.get("longitude")
+                    region = "NOMINAL_LEO"
+                    if lat is not None and lon is not None:
+                        try:
+                            if -45.0 <= float(lat) <= -5.0 and -90.0 <= float(lon) <= 0.0:
+                                region = "SOUTH_ATLANTIC_ANOMALY"
+                        except (ValueError, TypeError):
+                            pass
+                    r["orbital_region"] = region
                     r["retrieved_at"] = retrieved_at
                     r["is_historical"] = True
                     r["is_live"] = False
@@ -148,6 +158,16 @@ def fetch_latest_nasa_radlab_data(
             source_status = "local_archive_fallback"
             source_label = "Local NASA RadLab Sample Archive (Verified Authentic Offline Data)"
             for r in raw_records:
+                lat = r.get("latitude")
+                lon = r.get("longitude")
+                region = "NOMINAL_LEO"
+                if lat is not None and lon is not None:
+                    try:
+                        if -45.0 <= float(lat) <= -5.0 and -90.0 <= float(lon) <= 0.0:
+                            region = "SOUTH_ATLANTIC_ANOMALY"
+                    except (ValueError, TypeError):
+                        pass
+                r["orbital_region"] = region
                 r["retrieved_at"] = retrieved_at
                 r["is_historical"] = True
                 r["is_live"] = False

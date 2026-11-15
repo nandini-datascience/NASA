@@ -13,7 +13,7 @@ Covers:
    - Airgap simulation (blocking non-loopback network calls) verifying zero external AI dependencies.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import os
 import re
 import socket
@@ -444,7 +444,7 @@ class TestOfflineCurrentReadings(unittest.TestCase):
         3. Verify that the assistant dynamically retrieves and returns the newly inserted value.
         """
         unique_dose = 77.42
-        fresh_ts = "2026-11-14T23:59:59Z"
+        fresh_ts = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
         new_record = [{
             "timestamp": fresh_ts,
             "instrument_id": "DosTel1",

@@ -87,6 +87,14 @@ from app.reports import (
     compile_astronaut_report_data,
     generate_astronaut_pdf_report
 )
+from app.twin import (
+    get_astronaut_profile,
+    get_ecg_recordings,
+    get_eeg_recordings,
+    get_body_regions_telemetry,
+    get_latest_radiation_telemetry,
+    get_latest_health_telemetry
+)
 
 # Configure logging
 logging.basicConfig(
@@ -2119,4 +2127,164 @@ async def download_astronaut_pdf_report(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "PDF Generation Error", "message": str(exc)}
         )
+
+
+# ============================================================================
+# FEATURE 7: 3D ASTRONAUT DIGITAL TWIN & COMPREHENSIVE TELEMETRY
+# ============================================================================
+
+@app.get(
+    "/api/radiation/latest",
+    tags=["3D Astronaut Digital Twin", "Radiation Monitoring"],
+    summary="Get Latest Radiation Telemetry for Astronaut Twin",
+    response_description="Latest radiation measurement, cumulative dose, and visual aura indicator"
+)
+async def get_radiation_latest() -> Dict[str, Any]:
+    """
+    Returns the latest available radiation telemetry for the 3D astronaut twin:
+    - Absorbed dose rate in µGy/hr
+    - Dose equivalent rate in µSv/hr
+    - Cumulative dose in µGy
+    - Particle flux and spacecraft altitude
+    - Visual aura parameters (color, density, intensity)
+    - Classification and scientific disclaimers
+    """
+    return get_latest_radiation_telemetry()
+
+
+@app.get(
+    "/api/health/latest",
+    tags=["3D Astronaut Digital Twin", "Astronaut Health Monitoring"],
+    summary="Get Latest Health Telemetry for Astronaut Twin",
+    response_description="Latest physiological vitals and status"
+)
+async def get_health_latest(
+    astronaut_id: str = Query("AST-01", description="Astronaut identifier (e.g. AST-01, AST-02)")
+) -> Dict[str, Any]:
+    """
+    Returns the latest physiological health measurements for the astronaut digital twin:
+    - Heart rate (BPM)
+    - Blood pressure systolic/diastolic (mmHg)
+    - Blood oxygen saturation SpO2 (%)
+    - Core body temperature (°C)
+    - Respiratory rate (breaths/min)
+    - Data classification and physiological normal ranges
+    """
+    return get_latest_health_telemetry(astronaut_id=astronaut_id)
+
+
+@app.get(
+    "/api/astronaut/profile",
+    tags=["3D Astronaut Digital Twin"],
+    summary="Get Astronaut Profile and Mission Telemetry",
+    response_description="Demographics, mission metadata, spacesuit systems, and flight experience"
+)
+async def get_astronaut_profile_endpoint(
+    astronaut_id: str = Query("AST-01", description="Astronaut identifier (e.g. AST-01, AST-02)")
+) -> Dict[str, Any]:
+    """
+    Returns the complete astronaut operational profile for the digital twin:
+    - Commander/crew member identification
+    - Mission and spacecraft orbit context (altitude, velocity, inclination)
+    - Flight duration and EVA experience
+    - Exploration Extravehicular Mobility Unit (xEMU) telemetry (O2 reserves, battery, pressure)
+    - Medical readiness benchmarks
+    """
+    return get_astronaut_profile(astronaut_id=astronaut_id)
+
+
+@app.get(
+    "/api/health/ecg",
+    tags=["3D Astronaut Digital Twin", "Astronaut Health Monitoring"],
+    summary="Get High-Resolution ECG Waveform Telemetry",
+    response_description="Lead II rhythm strip data points, cardiac intervals, and recording catalog"
+)
+async def get_health_ecg(
+    astronaut_id: str = Query("AST-01", description="Astronaut identifier"),
+    recording_id: Optional[str] = Query(None, description="Optional recording ID (e.g. ECG-2026-NSR-01, ECG-2026-EVA-02)")
+) -> Dict[str, Any]:
+    """
+    Returns high-resolution Electrocardiogram (Lead II rhythm strip) data points
+    with clinical intervals (PR, QRS, QT, QTc), rhythm classification, and recording catalog.
+    All data is explicitly classified as simulated demonstration telemetry.
+    """
+    return get_ecg_recordings(astronaut_id=astronaut_id, recording_id=recording_id)
+
+
+@app.get(
+    "/api/health/eeg",
+    tags=["3D Astronaut Digital Twin", "Astronaut Health Monitoring"],
+    summary="Get High-Resolution EEG Neurotelemetry Waveform",
+    response_description="Continuous brainwave microvolts, spectral frequency band power, and cognitive index"
+)
+async def get_health_eeg(
+    astronaut_id: str = Query("AST-01", description="Astronaut identifier"),
+    recording_id: Optional[str] = Query(None, description="Optional epoch recording ID (e.g. EEG-2026-ALERT-01, EEG-2026-EVA-02)")
+) -> Dict[str, Any]:
+    """
+    Returns high-resolution Electroencephalogram (EEG) continuous waveform
+    and frequency band power spectrum (Delta, Theta, Alpha, Beta, Gamma).
+    Includes cognitive workload score and fatigue index.
+    Explicitly classified as simulated demonstration telemetry.
+    """
+    return get_eeg_recordings(astronaut_id=astronaut_id, recording_id=recording_id)
+
+
+@app.get(
+    "/api/astronaut/body-regions",
+    tags=["3D Astronaut Digital Twin"],
+    summary="Get Telemetry and Historical Records by Body Region",
+    response_description="Head, Chest, Heart, Lungs, Abdomen, Arms, and Legs telemetry and scientific context"
+)
+async def get_astronaut_body_regions_endpoint(
+    astronaut_id: str = Query("AST-01", description="Astronaut identifier")
+) -> Dict[str, Any]:
+    """
+    Returns structured telemetry mappings and aerospace radiation research notes
+    for each selectable 3D body region:
+    1. Head (Neurological EEG, cranial temp, CNS radiation shielding)
+    2. Chest (Respiration, SpO2, thoracic expansion, chest patch dosimeter)
+    3. Heart (Cardiac rhythm, heart rate, blood pressure, ECG intervals)
+    4. Lungs (Tidal volume, ventilation pressure, O2 uptake)
+    5. Abdomen (Core temperature, metabolic heat, gastrointestinal status)
+    6. Arms (Glove pressure, fingertip temperature, muscular fatigue)
+    7. Legs (Lower limb perfusion, cephalad fluid shift, boot telemetry)
+    """
+    return get_body_regions_telemetry(astronaut_id=astronaut_id)
+
+
+@app.get(
+    "/api/astronaut/model",
+    tags=["3D Astronaut Digital Twin"],
+    summary="Get Realistic 3D Astronaut GLB Model",
+    response_description="Binary GLTF/GLB astronaut model asset"
+)
+async def get_astronaut_model():
+    """
+    Serves the realistic human NASA astronaut 3D model (GLB binary).
+    """
+    import os
+    from fastapi.responses import FileResponse
+
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    candidates = [
+        os.path.join(base_dir, "frontend", "assets", "models", "Astronaut.glb"),
+        os.path.join(base_dir, "frontend", "dist", "Astronaut.glb"),
+        os.path.join(base_dir, "frontend", "astronaut_twin", "public", "Astronaut.glb")
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            return FileResponse(
+                path=p,
+                media_type="model/gltf-binary",
+                filename="Astronaut.glb",
+                headers={"Access-Control-Allow-Origin": "*"}
+            )
+
+    raise HTTPException(
+        status_code=404,
+        detail={"error": "Model Not Found", "message": "Astronaut.glb model file is not present on disk."}
+    )
+
+
 

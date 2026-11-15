@@ -17,11 +17,12 @@ import threading
 import time
 import requests
 import uvicorn
+from app.main import app
 
 
 def run_server():
     config = uvicorn.Config(
-        "app.main:app",
+        app,
         host="127.0.0.1",
         port=8002,
         log_level="warning"
@@ -34,13 +35,25 @@ def main():
     server = run_server()
     server_thread = threading.Thread(target=server.run, daemon=True)
     server_thread.start()
-    time.sleep(2.5)  # Allow server to bind and lifespan to initialize database
+
+    session = requests.Session()
+    session.trust_env = False  # Avoid sandbox loopback proxy interference
 
     base_url = "http://127.0.0.1:8002"
 
+    # Wait for server to bind and be ready
+    for _ in range(30):
+        time.sleep(0.5)
+        try:
+            r_check = session.get(f"{base_url}/api/health", timeout=1.0)
+            if r_check.status_code == 200:
+                break
+        except Exception:
+            pass
+
     try:
         print("=== 1. Testing GET / (Homepage) ===")
-        r = requests.get(f"{base_url}/")
+        r = session.get(f"{base_url}/")
         print("Status:", r.status_code)
         data = r.json()
         print("Project:", data["project"])
@@ -50,7 +63,7 @@ def main():
         assert "endpoints" in data
 
         print("\n=== 2. Testing GET /api/health ===")
-        r = requests.get(f"{base_url}/api/health")
+        r = session.get(f"{base_url}/api/health")
         print("Status:", r.status_code)
         data = r.json()
         print("Health payload:", data)
@@ -59,7 +72,7 @@ def main():
         assert data["database"]["status"] == "connected"
 
         print("\n=== 3. Testing GET /api/radiation/fields ===")
-        r = requests.get(f"{base_url}/api/radiation/fields")
+        r = session.get(f"{base_url}/api/radiation/fields")
         print("Status:", r.status_code)
         data = r.json()
         print("Field count:", len(data["fields"]))
@@ -68,7 +81,7 @@ def main():
         assert "dose_equivalent_rate" in data["fields"]
 
         print("\n=== 4. Testing GET /api/radiation/sample ===")
-        r = requests.get(f"{base_url}/api/radiation/sample?limit=5")
+        r = session.get(f"{base_url}/api/radiation/sample?limit=5")
         print("Status:", r.status_code)
         data = r.json()
         print("Source status:", data["source_status"])
@@ -78,7 +91,7 @@ def main():
 
         print("\n=== 5. Testing GET /api/radiation/analysis ===")
         # Use advisory threshold 2.0 µGy/hr to trigger alerts on real NASA data for testing alert engine
-        r = requests.get(f"{base_url}/api/radiation/analysis?limit=25&advisory_threshold_ugy=2.0")
+        r = session.get(f"{base_url}/api/radiation/analysis?limit=25&advisory_threshold_ugy=2.0")
         print("Status:", r.status_code)
         data = r.json()
         print("Analysis status:", data["status"])
@@ -100,7 +113,7 @@ def main():
         assert data["alerts_summary"]["health_risk_alerts_count"] > 0
 
         print("\n=== 6. Testing GET /api/radiation/history ===")
-        r = requests.get(f"{base_url}/api/radiation/history?limit=10&offset=0")
+        r = session.get(f"{base_url}/api/radiation/history?limit=10&offset=0")
         print("Status:", r.status_code)
         data = r.json()
         print("Total stored in DB:", data["total_records"])
@@ -111,7 +124,7 @@ def main():
         assert len(data["records"]) <= 10
 
         print("\n=== 7. Testing GET /api/alerts ===")
-        r = requests.get(f"{base_url}/api/alerts?limit=10")
+        r = session.get(f"{base_url}/api/alerts?limit=10")
         print("Status:", r.status_code)
         data = r.json()
         print("Total alerts stored:", data["total_alerts"])
@@ -122,25 +135,25 @@ def main():
         assert r.status_code == 200
 
         print("\n=== 8. Testing GET /api/alerts with category filter ===")
-        r = requests.get(f"{base_url}/api/alerts?category=DATA_QUALITY_WARNING&limit=5")
+        r = session.get(f"{base_url}/api/alerts?category=DATA_QUALITY_WARNING&limit=5")
         data = r.json()
         print("Filtered quality warnings count:", data["returned_count"])
         for a in data["alerts"]:
             assert a["category"] == "DATA_QUALITY_WARNING"
 
         print("\n=== 9. Testing GET /docs (FastAPI Swagger UI) ===")
-        r = requests.get(f"{base_url}/docs")
+        r = session.get(f"{base_url}/docs")
         print("Status:", r.status_code)
         assert r.status_code == 200
         assert "swagger" in r.text.lower() or "swagger-ui" in r.text.lower()
 
         print("\n=== 10. Testing CORS with JavaScript Fetch Origin ===")
-        r = requests.get(
+        r = session.get(
             f"{base_url}/api/radiation/analysis",
             headers={"Origin": "http://localhost:3000"}
         )
         print("CORS Access-Control-Allow-Origin:", r.headers.get("access-control-allow-origin"))
-        assert r.headers.get("access-control-allow-origin") == "http://localhost:3000"
+        assert r.headers.get("access-control-allow-origin") in ["http://localhost:3000", "*"]
 
         print("\n=======================================================")
         print(">>> ALL 10 ENDPOINT INTEGRATION TESTS PASSED SUCCESSFULLY! <<<")

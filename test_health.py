@@ -191,29 +191,24 @@ class TestHealthDatabaseDuplicatePrevention(unittest.TestCase):
 
 
 class TestHealthHttpEndpoints(unittest.TestCase):
-    """Tests live HTTP endpoints for astronaut health monitoring via Uvicorn."""
+    """Tests HTTP endpoints for astronaut health monitoring via FastAPI TestClient."""
 
     @classmethod
     def setUpClass(cls):
+        from fastapi.testclient import TestClient
+        from app.main import app
         from app.db import get_db_connection
+
         conn = get_db_connection()
         with conn:
             conn.execute("DELETE FROM astronaut_health_records WHERE astronaut_id LIKE 'AST-TEST%';")
             conn.execute("DELETE FROM astronaut_health_alerts WHERE astronaut_id LIKE 'AST-TEST%';")
         conn.close()
 
-        config = uvicorn.Config("app.main:app", host="127.0.0.1", port=8003, log_level="error")
-        cls.server = uvicorn.Server(config)
-        cls.thread = threading.Thread(target=cls.server.run, daemon=True)
-        cls.thread.start()
-        time.sleep(2.0)  # Wait for server bind and DB init
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.server.should_exit = True
+        cls.client = TestClient(app)
 
     def test_get_health_measurements(self):
-        r = requests.get("http://127.0.0.1:8003/api/health/measurements?limit=10")
+        r = self.client.get("/api/health/measurements?limit=10")
         self.assertEqual(r.status_code, 200)
         data = r.json()
         self.assertIn("measurements", data)
@@ -233,7 +228,7 @@ class TestHealthHttpEndpoints(unittest.TestCase):
             "data_classification": "simulated_demo",
             "notes": "Simulated live demonstration post"
         }
-        r = requests.post("http://127.0.0.1:8003/api/health/measurements", json=payload)
+        r = self.client.post("/api/health/measurements", json=payload)
         self.assertEqual(r.status_code, 201)
         data = r.json()
         self.assertEqual(data["status"], "success")
@@ -249,19 +244,19 @@ class TestHealthHttpEndpoints(unittest.TestCase):
             "blood_pressure_diastolic": 120.0,  # Inverted
             "data_classification": "simulated_demo"
         }
-        r = requests.post("http://127.0.0.1:8003/api/health/measurements", json=payload)
+        r = self.client.post("/api/health/measurements", json=payload)
         self.assertEqual(r.status_code, 422)
         data = r.json()
         self.assertIn("validation_errors", data["detail"])
 
     def test_get_health_history(self):
-        r = requests.get("http://127.0.0.1:8003/api/health/history?limit=5")
+        r = self.client.get("/api/health/history?limit=5")
         self.assertEqual(r.status_code, 200)
         data = r.json()
         self.assertIn("records", data)
 
     def test_get_health_alerts(self):
-        r = requests.get("http://127.0.0.1:8003/api/health/alerts?limit=5")
+        r = self.client.get("/api/health/alerts?limit=5")
         self.assertEqual(r.status_code, 200)
         data = r.json()
         self.assertIn("alerts", data)
@@ -270,17 +265,17 @@ class TestHealthHttpEndpoints(unittest.TestCase):
     def test_non_regression_radiation_endpoints(self):
         """Verifies that all existing radiation endpoints still work seamlessly."""
         # 1. System health check
-        r_health = requests.get("http://127.0.0.1:8003/api/health")
+        r_health = self.client.get("/api/health")
         self.assertEqual(r_health.status_code, 200)
         self.assertEqual(r_health.json()["status"], "healthy")
 
         # 2. Radiation sample endpoint
-        r_rad = requests.get("http://127.0.0.1:8003/api/radiation/sample?limit=2")
+        r_rad = self.client.get("/api/radiation/sample?limit=2")
         self.assertEqual(r_rad.status_code, 200)
         self.assertIn("records", r_rad.json())
 
         # 3. Radiation analysis endpoint
-        r_analysis = requests.get("http://127.0.0.1:8003/api/radiation/analysis?limit=5")
+        r_analysis = self.client.get("/api/radiation/analysis?limit=5")
         self.assertEqual(r_analysis.status_code, 200)
         self.assertIn("radiation_analysis", r_analysis.json())
 

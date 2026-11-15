@@ -66,7 +66,15 @@ const CONFIG = {
         DETECTOR_COMPARISON: '/api/radiation/detectors/comparison',
         DETECTOR_LIST: '/api/radiation/detectors/list',
         REPORT_PREVIEW: '/api/reports/preview',
-        REPORT_PDF: '/api/reports/pdf'
+        REPORT_PDF: '/api/reports/pdf',
+
+        // 3D Astronaut Digital Twin Endpoints
+        TWIN_RADIATION_LATEST: '/api/radiation/latest',
+        TWIN_HEALTH_LATEST: '/api/health/latest',
+        TWIN_ASTRONAUT_PROFILE: '/api/astronaut/profile',
+        TWIN_HEALTH_ECG: '/api/health/ecg',
+        TWIN_HEALTH_EEG: '/api/health/eeg',
+        TWIN_BODY_REGIONS: '/api/astronaut/body-regions'
     }
 };
 

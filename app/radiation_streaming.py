@@ -25,7 +25,7 @@ import math
 import random
 import threading
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("astra_care.streaming")
 
