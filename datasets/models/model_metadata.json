@@ -1,0 +1,59 @@
+{
+  "algorithm": "Isolation Forest (scikit-learn)",
+  "trained_at": "2026-11-14T09:51:04.412444+00:00",
+  "training_samples_count": 1205,
+  "feature_columns": [
+    "absorbed_dose_rate",
+    "flux",
+    "detector_z_score",
+    "dose_rate_delta",
+    "flux_to_dose_ratio",
+    "is_in_saa_region"
+  ],
+  "contamination_parameter": 0.05,
+  "n_estimators": 100,
+  "anomalies_detected_in_training": 61,
+  "training_anomaly_percentage": 5.06,
+  "score_mean": 0.1871,
+  "score_std": 0.0844,
+  "score_min": -0.1403,
+  "score_max": 0.257,
+  "detector_baselines": {
+    "DosTel1": {
+      "mean_dose_rate": 45.7345,
+      "std_dose_rate": 121.8081,
+      "mean_flux": 1.3548,
+      "std_flux": 3.3203,
+      "sample_count": 492
+    },
+    "DosTel2": {
+      "mean_dose_rate": 35.8251,
+      "std_dose_rate": 100.4623,
+      "mean_flux": 0.9093,
+      "std_flux": 2.1421,
+      "sample_count": 486
+    },
+    "Lidal": {
+      "mean_dose_rate": 4.5533,
+      "std_dose_rate": 4.7029,
+      "mean_flux": 0.2061,
+      "std_flux": 0.247,
+      "sample_count": 114
+    },
+    "REM-Lid": {
+      "mean_dose_rate": 14.1708,
+      "std_dose_rate": 48.5412,
+      "mean_flux": 0.4737,
+      "std_flux": 1.0631,
+      "sample_count": 113
+    }
+  },
+  "algorithm_selection_rationale": "Isolation Forest was selected because the authentic NASA RadLab telemetry contains no human-labeled ground-truth radiation anomalies. Isolation Forest builds an ensemble of random trees where abnormal observations have noticeably shorter average path lengths. It operates with O(n log n) complexity, runs streaming inference in < 2ms, handles non-linear feature interactions, and avoids distance-metric bottlenecks present in Local Outlier Factor (LOF).",
+  "limitations": "Unsupervised anomaly detection flags statistical deviations from training distributions; it does NOT replace validated radiation dosimetry health limits (NASA-STD-3001 / NCRP Report 132). High readings caused by expected nominal orbital dynamics (such as nominal SAA transit) are statistical excursions and must be contextualized with spacecraft orbital location.",
+  "test_evaluation": {
+    "test_samples_count": 302,
+    "test_anomalies_detected": 0,
+    "test_anomaly_percentage": 0.0,
+    "lof_comparison_anomalies": 5
+  }
+}
