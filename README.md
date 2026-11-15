@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ASTRA CARE 2.0 – AI-Powered Astronaut Health Monitoring and Dynamic Space Radiation Detection System
 
 Full-stack aerospace telemetry and astronaut health monitoring platform built with **Python FastAPI**, **Scikit-Learn (Isolation Forest)**, **SQLite**, and **vanilla HTML5/CSS3/JavaScript (Fetch API, Chart.js)** to manage, simulate, analyze, and detect anomalies across:
@@ -863,3 +864,6 @@ Before synthesizing audio with SAPI5, `clean_text_for_tts()` expands technical s
 - `POST /api/assistant/voice-to-text` — Transcribe microphone audio offline (supports multipart upload or raw WAV bytes).
 - `POST /api/assistant/text-to-speech` — Synthesize assistant text response to 16-bit PCM WAV using Windows SAPI5 with long-text chunking support.
 
+=======
+C:\Users\TEJASHWINI SR\OneDrive\Desktop
+>>>>>>> 124b4b07d2e7d6d5545a8ae7c3b6c95fd8214c40
